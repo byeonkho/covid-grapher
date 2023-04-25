@@ -4,7 +4,6 @@ import "../calendar.css";
 function Cal(props) {
     return (
         <div>
-            <h1 className="text-center">React Calendar with Range</h1>
             <div className="calendar-container">
                 <Calendar
                     onChange={props.setDate}

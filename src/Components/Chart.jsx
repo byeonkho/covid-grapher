@@ -34,16 +34,27 @@ const LineChart = (props) => {
             return;
         }
 
-        const countryNames = Array.from(
-            new Set(props.countriesData.map((data) => data.Country))
-        ); // get an array of unique country names
+        const countryNames = [];
+        const series = [];
 
-        const series = countryNames.map((country) => ({
-            name: country,
-            data: props.countriesData
-                .filter((data) => data.Country === country)
-                .map((data) => data.Confirmed),
-        }));
+        for (let i = 0; i < props.countriesData.length; i++) {
+            const data = props.countriesData[i];
+            const country = data.Country;
+
+            if (!countryNames.includes(country)) {
+                countryNames.push(country);
+
+                const newData = { name: country, data: [] };
+                series.push(newData);
+            }
+
+            for (let j = 0; j < series.length; j++) {
+                if (series[j].name === country) {
+                    series[j].data.push(data.Confirmed);
+                    break;
+                }
+            }
+        }
 
         const categories = props.countriesData.map((data) => data.Date);
 

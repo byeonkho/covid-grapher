@@ -4,16 +4,22 @@ import Cal from "./Calendar";
 import LineChart from "./Chart";
 import { countryNames } from "../countries";
 import Navbar from "./NavBar";
+import Dropdown from "./Dropdown";
 
 function App() {
+    // main data array returned from API
     const [countriesData, setCountriesData] = useState([]);
+
+    // date states from date range picker
     const [date, setDate] = useState(new Date());
+    const [startDate, setStartDate] = useState();
+    const [endDate, setEndDate] = useState();
+
+    // selected country from dropdown
+    const [selectedCountry, setSelectedCountry] = useState();
 
     //temp for debugging
     const [country, setCountry] = useState("singapore");
-
-    const [startDate, setStartDate] = useState();
-    const [endDate, setEndDate] = useState();
 
     useEffect(() => {
         if (date[0] && date[1]) {
@@ -47,26 +53,22 @@ function App() {
     }, [countriesData]);
 
     const getData = async () => {
-        const countries = ["japan"]; // Add more countries as needed
-        const dataPromises = countries.map((country) =>
-            fetch(
+        const countries = ["singapore", "malaysia"]; // Add more countries as needed
+        const dataPromises = countries.map(async (country) => {
+            const res = await fetch(
                 `https://api.covid19api.com/country/${country}?from=${startDate}&to=${endDate}`,
                 requestOptions
-            )
-                .then((res) => res.json())
-                .then((data) =>
-                    data
-                        .map(({ Country, Date, Confirmed }, i, arr) => ({
-                            Country,
-                            Date: Date.substring(0, 10),
-                            Confirmed:
-                                i > 0
-                                    ? Confirmed - arr[i - 1].Confirmed
-                                    : Confirmed,
-                        }))
-                        .slice(1)
-                )
-        );
+            );
+            const data = await res.json();
+            return data
+                .map(({ Country, Date, Confirmed }, i, arr) => ({
+                    Country,
+                    Date: Date.substring(0, 10),
+                    Confirmed:
+                        i > 0 ? Confirmed - arr[i - 1].Confirmed : Confirmed,
+                }))
+                .slice(1);
+        });
         const allData = await Promise.all(dataPromises);
         const combinedData = allData.flat();
         setCountriesData(combinedData);
@@ -74,8 +76,12 @@ function App() {
 
     return (
         <div className="App">
-            <Navbar />
-            {countryNames}
+            {/* <Navbar /> */}
+            <Dropdown
+                setSelectedCountry={setSelectedCountry}
+                selectedCountry={selectedCountry}
+            />
+
             <Cal date={date} setDate={setDate} />
             <button onClick={getData}>submit</button>
             <LineChart countriesData={countriesData} />
